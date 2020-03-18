@@ -9,8 +9,11 @@ class eventsClass():
     def __init__(self,df):
         import pandas as pd
         self.df = df
-        self.df['date']=pd.to_datetime(self.df['date'])
+        self.df['date']=pd.to_datetime(self.df['date'],infer_datetime_format=True)
         self.df['date']=self.df['date'].dt.date
+        self.df['identifier'] = self.df['identifier'].astype('int')
+        self.df['lat'] = self.df['lat'].astype('float')
+        self.df['lon'] = self.df['lon'].astype('float')
 
 
     def __str__(self):

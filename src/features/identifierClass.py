@@ -2,13 +2,14 @@ import pandas as pd
 
 class identifierClass():
     """ Handles the identifier2weatherloc dataframe. 
-    identifier2weatherloc includes identifier as index, and the weather
-    grid lat,lon for that identifier (pre-sorted from Complaints_feature.ipynb)
-    This is for the combined complaints + tickets features. for the negative labels,
-    uses weather lat/lon directly instead..."""
+    identifier2weatherloc includes identifier, Building ID, and
+    grid lat,lon for that identifier"""
 
     def __init__(self, df):
         self.df = df
+        self.df['lat'] = self.df['lat'].astype('float')
+        self.df['lon'] = self.df['lon'].astype('float')
+        self.df['identifier'] = self.df['identifier'].astype('int')
 
 
     def __str__(self):
@@ -19,9 +20,9 @@ class identifierClass():
         #print(identifier)
         errFlag = False
         try:
-            temp = self.df.loc[identifier]
-            lat = temp['lat']
-            lon = temp['lon']
+            temp = self.df[self.df['identifier']==identifier]
+            lat = temp['lat'].iloc[0].astype('float')
+            lon = temp['lon'].iloc[0].astype('float')
         except:
             errFlag = True
             lat=0

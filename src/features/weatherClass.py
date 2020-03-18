@@ -14,8 +14,10 @@ class weatherClass():
 
     def __init__(self,df):
         self.df = df
-        self.df['time']=pd.to_datetime(self.df['time'])
+        self.df['time']=pd.to_datetime(self.df['time'],infer_datetime_format=True)
         self.df['date']=self.df['time'].dt.date
+        self.df['lat'] = self.df['lat'].astype('float')
+        self.df['lon'] = self.df['lon'].astype('float')
 
     def __str__(self):
         return self.df.shape
@@ -71,16 +73,30 @@ class weatherClass():
         """get the weather from date0 to thdate at iloc j"""
         eventDate = df['date'].iloc[j]
         weatherSegment = df[df['date'] <= eventDate]
-        print('date0 in function:',date0)
-        print('weatherSegment:')
-        print(weatherSegment)
+        #print('date0 in function:',date0)
+        #print('weatherSegment:')
+        #print(weatherSegment)
         weatherSegment = weatherSegment[weatherSegment['date'] >= date0]
         return weatherSegment
 
-    def weatherByLatLon(self,Lat,Lon):
+    def weatherByLatLon(df,weather_lats,weather_lons,Lat,Lon):
         """gets all the weather for a given lat lon point in the weather grid"""
-        weatherOut = self.df[self.df['lat']==Lat]
-        weatherOut = weatherOut[weatherOut['lon']==Lon]
+        #print(df.keys())
+        minDiff = 2000
+        for lat in weather_lats:
+            diff = lat-Lat
+            if (diff<minDiff):
+                minDiff=diff
+                minLat = lat
+        minDiff = 2000
+        for lon in weather_lons:
+            diff = lon-Lon
+            if (diff<minDiff):
+                minDiff=diff
+                minLon = lon
+        weatherOut = df[df['lat']==minLat]
+        weatherOut = weatherOut[weatherOut['lon']==minLon]
+
         return weatherOut
 
 

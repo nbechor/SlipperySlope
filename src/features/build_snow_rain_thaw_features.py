@@ -34,6 +34,9 @@ def predictFrost():
     freezeIndicatorInt['last snow amount'] = pd.Series(np.zeros(N))
     freezeIndicatorInt['time since last freeze'] = pd.Series(np.zeros(N))
     freezeIndicatorInt['time since last snow'] = pd.Series(np.zeros(N))
+    freezeIndicatorInt['Total snow in last 10 days'] = pd.Series(np.zeros(N))
+    freezeIndicatorInt['Total thaw in last 10 days'] = pd.Series(np.zeros(N))
+
 
     lastFreezeTime = df['sunriseTime'].iloc[0]
     freezeIndicator = False
@@ -62,6 +65,17 @@ def predictFrost():
             # means that we started a new winter and need to zero cumulative features
             cumuSnow = 0
             cumuThaw = 0
+            SnowInLast10Days=0
+            ThawInLast10Days = 10
+        if (tempMinTime-yesterdayTime<10**24*60*60):
+            # total snow in last 10 days:
+            weatherSection=df.iloc[i-10:i]
+            daysWithPercip = weatherSection[weatherSection['precipIntensity']>0]
+            daysWithSnow = daysWithPercip[daysWithPercip['precipType']~='rain']
+            SnowInLast10Days =daysWithSnow['precipAccumulation'].sum()
+            # total days with serious thaw in last 10 days:
+            ThawDays = weatherSection[weatherSection['temperatureMin']>=32]
+            ThawInLast10Days = ThawDays.shape[0]
 
         if (tempMinToday<=32.0) & (tempMaxToday>32.0):
             tempMaxTime = df.temperatureMaxTime.iloc[i]
@@ -115,7 +129,7 @@ def predictFrost():
         precipIndicator = df['precipIntensity'].iloc[i]
         if (precipIndicator>0):
             precipType = df['precipType'].iloc[i]
-            if (precipType=='rain'):
+            if ('rain' in precipType):
                 rainAmount = df['precipAccumulation'].iloc[i]
                 if math.isnan(rainAmount):
                     freezeIndicatorInt['rain amount'].iloc[i] = 0
@@ -148,6 +162,8 @@ def predictFrost():
         freezeIndicatorInt['last snow amount'].iloc[i] = snowAmount
         freezeIndicatorInt['snow so far'].iloc[i] = cumuSnow
         freezeIndicatorInt['thaw so far'].iloc[i] = cumuThaw
+        freezeIndicatorInt['Total snow in last 10 days'] = SnowInLast10Days
+        freezeIndicatorInt['Total thaw in last 10 days'] = ThawInLast10Days
         freezeIndicatorInt = freezeIndicatorInt.fillna(0)
     return freezeIndicatorInt
 
